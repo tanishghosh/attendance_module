@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+        <style>
+                table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+            }
+            
+            th, td {
+                padding: 15px;
+            }
+            
+            table {
+                border-spacing: 5px;
+            }
+            
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+        <script src="https://www.gstatic.com/firebasejs/6.4.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/6.4.1/firebase-auth.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/6.4.1/firebase-storage.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/6.4.1/firebase-database.js"></script>
+        <script>
+          // Initialize Firebase
+          var config = {
+             apiKey: "YOUR_API_KEY",
+             authDomain: "AUTH_DOMAIN_ID",
+             databaseURL: "DATABASE_URL",
+             projectId: "PROJECT_ID",
+             storageBucket: "",
+             messagingSenderId: "MESSAGE_SENDER_ID",
+             appId: "APP_ID"
+        };
+         // Initialize Firebase
+            firebase.initializeApp(config);
+        </script>
+</head>
+
+<body>
+<table style="width:100%" id="ex-table">
+  <tr id="tr">
+    <th>Name</th>
+    <th>ID</th>
+    <th>Count</th> 
+    <th>Roll Call</th>
+</table> 
+<input type="submit" value="submit" onclick="func()">
+</body>
+
+<script>
+    var database = firebase.database();
+    var n=new Array();
+    var co = new Array();
+    var id = new Array();
+    database.ref("list/").on("child_added", function(snapshot, prevChildKey) {
+        var newPost = snapshot.val();
+        var content = '';
+        n.push(newPost.Name);
+        id.push(newPost.Reg);
+        co.push(newPost.count);
+        content +='<tr>';
+        content += '<td>' + newPost.Name + '</td>';
+        content += '<td>' + newPost.Reg + '</td>';
+        content += '<td>' + newPost.count +'</td>';
+        content += '<td>' + '<input class="messageCheckbox" type="checkbox" value='+ newPost.Reg + '></td>';
+        content += '</tr>';
+        $('#ex-table').append(content);
+    });
+
+
+   
+</script>
+
+
+     <script>
+    function func(){
+          var checkedValue = null; 
+          var li = new Array();
+          var inputElements = document.getElementsByClassName('messageCheckbox');
+          for(var i=0; inputElements[i]; ++i){
+                if(inputElements[i].checked){
+                    checkedValue = inputElements[i].value;
+                    li.push(checkedValue); 
+                }
+            }
+            console.log(li);
+            upd(li);
+            }
+    
+    function upd(li){
+        var db = firebase.database();
+        for(var j=0;li[j];++j)
+            {
+                var cellNum = 0;
+
+                firebase.database().ref().child("list").orderByChild("Reg").equalTo(li[j]).once("value", function (snapshot) {
+                    snapshot.forEach(function(childSnapshot) {
+                            cellNum=childSnapshot.val().count;
+                            console.log(cellNum);
+                    });
+                });
+
+                db.ref("list/"+li[j]+"/count").set(cellNum+1);
+            }
+    }
+
+    
+    </script>
